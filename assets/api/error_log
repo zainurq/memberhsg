@@ -1,0 +1,33 @@
+[13-Oct-2023 13:39:04 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[13-Oct-2023 14:57:33 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[13-Oct-2023 19:26:52 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[14-Oct-2023 08:34:37 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[17-Oct-2023 08:38:04 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[17-Oct-2023 10:23:24 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[17-Oct-2023 10:25:16 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[17-Oct-2023 10:28:16 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[26-Oct-2023 14:16:39 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[26-Oct-2023 14:18:25 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[26-Oct-2023 14:19:30 Asia/Jakarta] PHP Warning:  mysqli_fetch_array() expects parameter 1 to be mysqli_result, bool given in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 287
+[26-Oct-2023 14:19:30 Asia/Jakarta] PHP Notice:  Undefined variable: orderid in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 293
+[26-Oct-2023 14:19:30 Asia/Jakarta] PHP Notice:  Undefined variable: orderid in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 294
+[26-Oct-2023 14:33:17 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[31-Oct-2023 10:50:30 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[31-Oct-2023 10:56:04 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[31-Oct-2023 11:22:45 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[31-Oct-2023 11:31:53 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[31-Oct-2023 13:09:53 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[31-Oct-2023 14:17:47 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[31-Oct-2023 14:19:10 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[31-Oct-2023 15:00:14 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[31-Oct-2023 15:02:47 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[31-Oct-2023 16:33:15 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[09-Nov-2023 14:56:34 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[09-Nov-2023 16:13:27 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[13-Nov-2023 11:26:40 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[13-Nov-2023 11:57:56 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[14-Nov-2023 09:28:26 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[20-Nov-2023 13:56:37 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[23-Nov-2023 08:58:29 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[23-Nov-2023 09:15:35 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
+[12-Dec-2023 10:35:56 Asia/Jakarta] PHP Deprecated:  Array and string offset access syntax with curly braces is deprecated in /home1/hsgcoid/hadiah.indonesianjuices.com/assets/api/process.php on line 10
