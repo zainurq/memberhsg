@@ -1,7 +1,7 @@
 <meta charset="utf-8" />
-<title><?= ($title) ? $title : '' ?> | Indonesian Juices</title>
+<title><?= ($title) ? $title : '' ?> | HSG Member</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta content="Premium Multipurpose Admin & Dashboard Template" name="description" />
 <meta content="Themesbrand" name="author" />
 <!-- App favicon -->
-<link rel="shortcut icon" href="assets/images/logo-ij.png">
+<link rel="shortcut icon" href="assets/images/memberhsg.png">

@@ -32,7 +32,7 @@ function handleIt(){
                     window.location.href = "index.php";
                 }
             },
-            error: function () {
+            error: function () { 
                 alert('Gagal menjalankan PHP script.');
             }
         });

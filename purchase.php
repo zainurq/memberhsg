@@ -4,6 +4,8 @@ include 'layouts/config.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+session_start();
+
 // Set default status
 $status = "Data tidak disimpan";
 
@@ -18,8 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($result->num_rows > 0) {
         $product = $result->fetch_assoc();
-        $memberid = 'HSG.21.000001';
-        $user = 'admin'; 
+        $memberid = $_SESSION['kd_member'];
+
         // Query untuk mendapatkan poin pengguna
         $queryUserPoin = "SELECT IFNULL(SUM(point), 0) as poin FROM point_member WHERE kd_member = '$memberid' and flag = 'get'";
         $resultUserPoin = $link->query($queryUserPoin);
@@ -43,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Lakukan query-insert untuk menyimpan data poin_member
                 $update = "INSERT INTO development.point_member (kd_member, point, invoice, flag, exp, create_by, date_create, time_create, payment)
-                            VALUES ('$memberid', " . $product['poin'] . ", '$sku', 'used', CURDATE(), '$user', CURDATE(), CURTIME(), '901')";
+                            VALUES ('$memberid', " . $product['poin'] . ", '$sku', 'used', CURDATE(), 'admin', CURDATE(), CURTIME(), '901')";
                 $resultUpdate = $link->query($update);
 
                 if (!$resultUpdate) {
@@ -63,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Modal Popup untuk Pemberitahuan Pengurangan Poin
                 echo '
-                    <div class="modal" id="myModal">
+                    <div class="modal" id="successModal">
                         <div class="modal-dialog">
                             <div class="modal-content">
                                 <!-- Modal Header -->
@@ -77,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </div>
                                 <!-- Modal Footer -->
                                 <div class="modal-footer">
-                                    <button type="button" class="btn btn-success" data-dismiss="modal">Tutup</button>
+                                    <button type="button" class="btn btn-success" data-dismiss="modal" onclick="redirectToHome()">Tutup</button>
                                 </div>
                             </div>
                         </div>
@@ -85,7 +87,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 mysqli_close($link);
 
-                header("Location: index.php");
+                // Redirect ke halaman utama
+                header("Location: success.php");
                 exit();
             } else {
                 // Poin pengguna tidak mencukupi

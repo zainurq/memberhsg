@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL & ~E_NOTICE);
+
 include 'layouts/main.php';
 include 'layouts/config.php';
 error_reporting(E_ALL);
@@ -29,10 +31,25 @@ $products = json_decode($jsonData, true);
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <style>
         .card-body p {
-            font-size: 12px;
-            height: 40px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        font-size: 12px;
+        height: 20px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        }
+
+        .card-body h5 {
+        font-size: 14px;
+        height: 30px;
+
+        }
+        
+        .card-body {
+        height: 200px;
+        }
+
+        .col-md-4 {
+            flex: 0 0 20%; /* Mengatur lebar kolom untuk tampilan dekstop */
+            max-width: 20%;
         }
 
         @media (max-width: 767px) {
@@ -43,7 +60,7 @@ $products = json_decode($jsonData, true);
             }
 
             .card-body {
-                height: 110px;
+                height: 130px;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }

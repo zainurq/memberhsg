@@ -1,122 +1,225 @@
-<?php 
+<?php
+// Include file-session.php, main.php, dan config.php
+error_reporting(E_ALL & ~E_NOTICE);
+
 include 'layouts/session.php';
 include 'layouts/main.php';
 include 'layouts/config.php';
 
-// error_reporting(E_ALL);
-// ini_set('display_errors', 1);
+if ($login == 'true' && $_SERVER['REQUEST_METHOD'] == 'POST') {
+    if (!empty($_POST['oldpassword']) && !empty($_POST['newpassword'])) {
+        // Verifikasi old password
+        $checkQuery = "SELECT * FROM member_hsg WHERE email = ? AND password = MD5(?)";
+        $checkStmt = mysqli_prepare($link, $checkQuery);
+        mysqli_stmt_bind_param($checkStmt, 'ss', $_SESSION['email'], $_POST['oldpassword']);
+        mysqli_stmt_execute($checkStmt);
+        $checkResult = mysqli_stmt_get_result($checkStmt);
+
+        if ($checkResult && mysqli_num_rows($checkResult) > 0) {
+            // Update password
+            $updatePasswordQuery = "UPDATE member_hsg SET password = MD5(?) WHERE email = ?";
+            $updatePasswordStmt = mysqli_prepare($link, $updatePasswordQuery);
+            mysqli_stmt_bind_param($updatePasswordStmt, 'ss', $_POST['newpassword'], $_SESSION['email']);
+            mysqli_stmt_execute($updatePasswordStmt);
+        } else {
+            // Password lama tidak cocok
+            echo json_encode(array('success' => false, 'message' => 'Old password does not match.'));
+            exit;
+        }
+    } else {
+        // Jika oldpassword dan newpassword kosong, berarti user ingin memperbarui informasi pengguna
+        $firstname = $_POST['firstname'];
+        $lastname = $_POST['lastname'];
+        $phonenumber = $_POST['phonenumber'];
+        $province = $_POST['province'];
+        $kecamatan = $_POST['kecamatan'];
+        $kelurahan = $_POST['kelurahan'];
+        $zipcode = $_POST['zipcode'];
+        $address = $_POST['address'];
+
+        // Contoh query UPDATE
+        $query = "UPDATE member_hsg SET
+                  firstname = ?, lastname = ?, phonenumber = ?, province = ?,
+                  kecamatan = ?, kelurahan = ?, zipcode = ?, address = ?
+                  WHERE email = ?";
+        $stmt = mysqli_prepare($link, $query);
+        mysqli_stmt_bind_param($stmt, 'sssssssss', $firstname, $lastname, $phonenumber, $province, $kecamatan, $kelurahan, $zipcode, $address, $_SESSION['email']);
+        mysqli_stmt_execute($stmt);
+    }
+
+    // Redirect ke halaman profile setelah update
+    header('Location: profile.php');
+    exit;
+}
+
+// Mengambil data pengguna dari database berdasarkan email yang disimpan di sesi
+if ($login == 'true') {
+    $query = "SELECT member_hsg.*, IFNULL(SUM(CASE
+                WHEN point_member.flag = 'get' THEN point_member.point
+                WHEN point_member.flag = 'used' THEN -point_member.point
+                ELSE 0
+            END), 0) AS total_poin FROM member_hsg
+        LEFT JOIN
+        point_member ON member_hsg.memberid = point_member.kd_member
+        WHERE member_hsg.email = ? LIMIT 1";
+
+    $stmt = mysqli_prepare($link, $query);
+    mysqli_stmt_bind_param($stmt, 's', $_SESSION['email']);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if ($row = mysqli_fetch_array($result)) {
+        $memberid = $row['memberid'];
+        $firstname = $row['firstname'];
+        $lastname = $row['lastname'];
+        $email = $row['email'];
+        $phonenumber = $row['phonenumber'];
+        $image = $row['imageprofile'];
+        $province = $row['province'];
+        $kecamatan = $row['kecamatan'];
+        $kelurahan = $row['kelurahan'];
+        $zipcode = $row['zipcode'];
+        $address = $row['address'];
+        $poin = $row['total_poin'];
+    }
+} else {
+    // Pengguna belum login, tampilkan pesan atau redirect ke halaman login jika perlu
+    header('Location: login.php');
+    exit;
+}
 ?>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
 
     <?php
     includeFileWithVariables('layouts/title-meta.php', array('title' => 'Profile Settings'));
+    
     include 'layouts/head-css.php';
     ?>
 
     <link href="assets/css/listtop.css" rel="stylesheet" type="text/css" />
     <link href="assets/libs/sweetalert2/sweetalert2.min.css" rel="stylesheet" type="text/css" />
-   
-    <?php
 
-$query = "SELECT member_hsg.*, IFNULL(SUM(CASE
-                    WHEN point_member.flag = 'get' THEN point_member.point
-                    WHEN point_member.flag = 'used' THEN -point_member.point
-                    ELSE 0
-                END),0) AS total_poin FROM member_hsg
-        LEFT JOIN
-        point_member ON member_hsg.memberid = point_member.kd_member
-        WHERE member_hsg.memberid = 'HSG.21.000001' LIMIT 1";
-
-
-
-        $exec = mysqli_query($link, $query);
-        while($row = mysqli_fetch_array($exec)){
-            $memberid = $row['memberid'];
-            $firstname = $row['firstname'];
-            $lastname = $row['lastname'];
-            $email = $row['email'];
-            $phonenumber = $row['phonenumber'];
-            $image = $row['imageprofile'];
-            $province = $row['province'];
-            $kecamatan = $row['kecamatan'];
-            $kelurahan = $row['kelurahan'];
-            $zipcode = $row['zipcode'];
-            $address = $row['address'];
-            $poin = $row['total_poin'];
-        }
-    ?>
     <style>
         @media (max-width: 767px) {
-        .map-container {
-            width: 100%;
-            padding-bottom: 75%; /* Asumsikan rasio lebar:tinggi iframe adalah 4:3 */
-            position: relative;
-        }
+            .map-container {
+                width: 100%;
+                padding-bottom: 75%;
+                position: relative;
+            }
 
-        .map-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            .map-container iframe {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            form {
+                margin-top: 20px; /* Sesuaikan dengan kebutuhan Anda */
+                margin-bottom: 20px; /* Sesuaikan dengan kebutuhan Anda */
+            }
+
+            .col-lg-4 {
+                margin-bottom: 15px; /* Sesuaikan dengan kebutuhan Anda */
+            }
+
+            .col-lg-12 {
+                margin-top: 20px; /* Sesuaikan dengan kebutuhan Anda */
+            }
         }
+        
+
+        #barcodeContainer {
+        display: none;
+        margin: auto;
+        text-align: center;
     }
 
+    .toggle-barcode-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
     </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
 </head>
 
 <body>
     <?php include 'layouts/menu.php'; ?>
 
-    <!-- Begin page -->
     <div id="layout-wrapper">
         <div class="white-bg">
         </div>
-        <!-- ============================================================== -->
-        <!-- Start right Content here -->
-        <!-- ============================================================== -->
         <div class="main-content">
             <div class="page-content">
                 <div class="container-fluid">
-                    <div class="position-relative mx-n2 mt-n2">
-                        <div class="profile-wid-bg profile-setting-img">
-                            <img src="assets/images/profile-bg.jpg" class="profile-wid-img" alt="">
-                            <div class="overlay-content">
-                                <div class="text-end">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-xl-3">
-                            <div class="card mt-n5">
-                                <div class="card-body">
-                                    <div class="text-center">
-                                        <div class="profile-user position-relative d-inline-block mx-auto  mb-4">
-                                            <img src="assets/images/users/avatar-1.jpg" class="rounded-circle avatar-xl img-thumbnail user-profile-image  shadow" alt="user-profile-image">
-                                            <div class="avatar-xs p-0 rounded-circle profile-photo-edit">
-                                                <input id="profile-img-file-input" type="file" class="profile-img-file-input">
-                                                <label for="profile-img-file-input" class="profile-photo-edit avatar-xs">
-                                                    <span class="avatar-title rounded-circle bg-light text-body shadow">
-                                                        <i class="ri-camera-fill"></i>
-                                                    </span>
-                                                </label>
+                    
+
+                    <?php
+                    if ($login == 'true') {
+                        $query = "SELECT member_hsg.*, IFNULL(SUM(CASE
+                                    WHEN point_member.flag = 'get' THEN point_member.point
+                                    WHEN point_member.flag = 'used' THEN -point_member.point
+                                    ELSE 0
+                                END), 0) AS total_poin FROM member_hsg
+                            LEFT JOIN
+                            point_member ON member_hsg.memberid = point_member.kd_member
+                            WHERE member_hsg.memberid = ? LIMIT 1";
+
+                        $stmt = mysqli_prepare($link, $query);
+                        mysqli_stmt_bind_param($stmt, 's', $_SESSION['kd_member']);
+                        mysqli_stmt_execute($stmt);
+                        $result = mysqli_stmt_get_result($stmt);
+
+                        if ($row = mysqli_fetch_array($result)) {
+                            $memberid = $row['memberid'];
+                            $firstname = $row['firstname'];
+                            $lastname = $row['lastname'];
+                            $email = $row['email'];
+                            $phonenumber = $row['phonenumber'];
+                            $image = $row['imageprofile'];
+                            $province = $row['province'];
+                            $kecamatan = $row['kecamatan'];
+                            $kelurahan = $row['kelurahan'];
+                            $zipcode = $row['zipcode'];
+                            $address = $row['address'];
+                            $poin = $row['total_poin'];
+                        }
+                    ?>
+                        <div class="row">
+                            <div class="col-xl-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="text-center">
+                                            <div class="profile-user position-relative d-inline-block mx-auto  mb-4">
+                                                <img src="assets/images/noimage.jpg" class="rounded-circle avatar-xl img-thumbnail user-profile-image  shadow" alt="user-profile-image">
+                                                <div class="avatar-xs p-0 rounded-circle profile-photo-edit">
+                                                    <input id="profile-img-file-input" type="file" class="profile-img-file-input">
+                                                    
+                                                </div>
+                                            </div>
+                                            <p class="text-muted mb-2"><?php echo $memberid; ?></p>
+                                            <p class="text-muted mb-0">Total Point</p>
+                                            <p class="text-muted mb-0"><?php echo $poin; ?></p>
+                                                <!-- Toggle Button -->
+                                            <div class="toggle-barcode-container">
+                                                <button class="btn btn-primary mt-2" onclick="toggleBarcode()">Show Barcode</button>
+                                                
+                                                <!-- Barcode Container -->
+                                                <div id="barcodeContainer" class="mt-2"></div>
                                             </div>
                                         </div>
-                                        <p class="text-muted mb-2"><?php echo $memberid; ?></p>
-                                        <p class="text-muted mb-0">Total Point</p>
-                                        <p class="text-muted mb-0"><?php echo $poin; ?></p>
-
                                     </div>
                                 </div>
                             </div>
                             <!--end card-->
-                        </div>
-                        <!--end col-->
-                        <div class="col-xxl-9">
-                            <div class="card mt-xxl-n5">
+                            <div class="col-xxl-9">
+                            <div class="card">
                                 <div class="card-header">
                                     <ul class="nav nav-tabs-custom rounded card-header-tabs border-bottom-0" role="tablist">
                                         <li class="nav-item">
@@ -135,8 +238,8 @@ $query = "SELECT member_hsg.*, IFNULL(SUM(CASE
                                             </a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" data-bs-toggle="tab" href="#maps" role="tab">
-                                                <i class="fas fa-map-marker-alt"></i> Maps
+                                            <a class="nav-link" data-bs-toggle="tab" href="#deleteAccount" role="tab">
+                                                <i class="fas fa-delete"></i> Delete Account
                                             </a>
                                         </li>
                                     </ul>
@@ -144,7 +247,7 @@ $query = "SELECT member_hsg.*, IFNULL(SUM(CASE
                                 <div class="card-body p-4">
                                     <div class="tab-content">
                                         <div class="tab-pane active" id="personalDetails" role="tabpanel">
-                                            <form action="layouts/action/prosesupdate.php" method="POST">
+                                            <form action="" method="POST">
                                                 <div class="row">
                                                     <div class="col-lg-6">
                                                         <div class="mb-3">
@@ -172,7 +275,7 @@ $query = "SELECT member_hsg.*, IFNULL(SUM(CASE
                                                     </div>
                                                     <div class="col-lg-3">
                                                         <div class="mb-3">
-                                                            <label for="provinceInput" class="form-label">Province</label>
+                                                            <label for="provinceInput" class="form-label">Provinsi</label>
                                                             <input type="text" class="form-control" id="provinceInput" name="province" placeholder="province" value="<?php echo $province; ?>" />
                                                         </div>
                                                     </div>
@@ -191,7 +294,7 @@ $query = "SELECT member_hsg.*, IFNULL(SUM(CASE
                                                     <div class="col-lg-3">
                                                         <div class="mb-3">
                                                             <label for="KodeposInput" class="form-label">kodepos</label>
-                                                            <input type="text" class="form-control" id="zipcodeInput" name="zip" placeholder="Enter zipcode" value="<?php echo $zipcode; ?>">
+                                                            <input type="text" class="form-control" id="zipcodeInput" name="zipcode" placeholder="Enter zipcode" value="<?php echo $zipcode; ?>">
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-12">
@@ -210,174 +313,186 @@ $query = "SELECT member_hsg.*, IFNULL(SUM(CASE
                                             </form>
                                         </div>
                                         <div class="tab-pane" id="changePassword" role="tabpanel">
-                                            <form action="javascript:void(0);">
-                                                <div class="row g-2">
-                                                    <div class="col-lg-4">
-                                                        <div>
-                                                            <label for="oldpasswordInput" class="form-label">Old Password*</label>
-                                                            <input type="password" class="form-control" id="oldpasswordInput" placeholder="Enter current password">
-                                                        </div>
+                                        <form action="" method="POST">
+                                            <div class="row">
+                                                <div class="col-lg-4">
+                                                    <div>
+                                                        <label for="oldpasswordInput" class="form-label">Old Password*</label>
+                                                        <input type="password" class="form-control" id="oldpasswordInput" name="oldpassword" placeholder="Enter current password" required>
                                                     </div>
-                                                    <div class="col-lg-4">
-                                                        <div>
-                                                            <label for="newpasswordInput" class="form-label">New Password*</label>
-                                                            <input type="password" class="form-control" id="newpasswordInput" name="password" placeholder="Enter new password">
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-4">
-                                                        <div>
-                                                            <label for="confirmpasswordInput" class="form-label">Confirm Password*</label>
-                                                            <input type="password" class="form-control" id="confirmpasswordInput" placeholder="Confirm password">
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12">
-                                                        <div class="mb-3">
-                                                            <a href="javascript:void(0);" class="link-primary text-decoration-underline">Forgot Password ?</a>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-lg-12">
-                                                        <div class="text-end">
-                                                            <button type="submit" class="btn btn-success">Change Password</button>
+                                                </div>
+                                                <div class="col-lg-4">
+                                                    <div>
+                                                        <label for="newpasswordInput" class="form-label">New Password*</label>
+                                                        <div class="input-group">
+                                                            <input type="password" class="form-control" id="newpasswordInput" name="newpassword" placeholder="Enter new password" required>
+                                                            <button type="button" class="btn btn-outline-secondary" id="toggleNewPassword">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </form>
+                                                <div class="col-lg-4">
+                                                    <div>
+                                                        <label for="confirmpasswordInput" class="form-label">Confirm Password*</label>
+                                                        <div class="input-group">
+                                                            <input type="password" class="form-control" id="confirmpasswordInput" placeholder="Confirm password" required>
+                                                            <button type="button" class="btn btn-outline-secondary" id="toggleConfirmPassword">
+                                                                <i class="fas fa-eye"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-lg-12">
+                                                    <div class="text-end">
+                                                        <button type="submit" class="btn btn-primary">Update</button>
+                                                        <button type="button" class="btn btn-soft-success">Cancel</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
                                         </div>
                                         <div class="tab-pane" id="help" role="tabpanel">
-                                        <h4>Contact Information</h4>
-                                        <!-- Accordions Bordered -->
-                                        <div class="accordion custom-accordionwithicon custom-accordion-border accordion-border-box accordion-secondary" id="accordionBordered">
-                                            <div class="accordion-item shadow">
-                                                <h2 class="accordion-header" id="accordionborderedExample1">
-                                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#accor_borderedExamplecollapse1" aria-expanded="true" aria-controls="accor_borderedExamplecollapse1">
-                                                        Vapehan
-                                                    </button>
-                                                </h2>
-                                                <div id="accor_borderedExamplecollapse1" class="accordion-collapse collapse show" aria-labelledby="accordionborderedExample1" data-bs-parent="#accordionBordered">
-                                                    <div class="accordion-body">
-                                                        <p>Contact Vapehan:</p>
-                                                        <p>Email: vapehan@example.com</p>
-                                                        <p>Phone: +123456789</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="accordion-item shadow mt-2">
-                                                <h2 class="accordion-header" id="accordionborderedExample2">
-                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accor_borderedExamplecollapse2" aria-expanded="false" aria-controls="accor_borderedExamplecollapse2">
-                                                        HSGMoto
-                                                    </button>
-                                                </h2>
-                                                <div id="accor_borderedExamplecollapse2" class="accordion-collapse collapse" aria-labelledby="accordionborderedExample2" data-bs-parent="#accordionBordered">
-                                                    <div class="accordion-body">
-                                                        <p>Contact HSGMoto:</p>
-                                                        <p>Email: hsgmoto@example.com</p>
-                                                        <p>Phone: +123456789</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="accordion-item shadow mt-2">
-                                                <h2 class="accordion-header" id="accordionborderedExample3">
-                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accor_borderedExamplecollapse3" aria-expanded="false" aria-controls="accor_borderedExamplecollapse3">
-                                                        Helihantoys
-                                                    </button>
-                                                </h2>
-                                                <div id="accor_borderedExamplecollapse3" class="accordion-collapse collapse" aria-labelledby="accordionborderedExample3" data-bs-parent="#accordionBordered">
-                                                    <div class="accordion-body">
-                                                        <p>Contact Helihantoys:</p>
-                                                        <p>Email: helihantoys@example.com</p>
-                                                        <p>Phone: +123456789</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="accordion-item shadow mt-2">
-                                                <h2 class="accordion-header" id="accordionborderedExample4">
-                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accor_borderedExamplecollapse4" aria-expanded="false" aria-controls="accor_borderedExamplecollapse4">
-                                                        Hans Print Plus
-                                                    </button>
-                                                </h2>
-                                                <div id="accor_borderedExamplecollapse4" class="accordion-collapse collapse" aria-labelledby="accordionborderedExample4" data-bs-parent="#accordionBordered">
-                                                    <div class="accordion-body">
-                                                        <p>Contact Hans Print Plus:</p>
-                                                        <p>Email: hansprint@example.com</p>
-                                                        <p>Phone: +123456789</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="accordion-item shadow mt-2">
-                                                <h2 class="accordion-header" id="accordionborderedExample5">
-                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accor_borderedExamplecollapse5" aria-expanded="false" aria-controls="accor_borderedExamplecollapse5">
-                                                        Indonesian Juices
-                                                    </button>
-                                                </h2>
-                                                <div id="accor_borderedExamplecollapse5" class="accordion-collapse collapse" aria-labelledby="accordionborderedExample5" data-bs-parent="#accordionBordered">
-                                                    <div class="accordion-body">
-                                                        <p>Contact Indonesian Juices:</p>
-                                                        <p>Email: indjuices@example.com</p>
-                                                        <p>Phone: +123456789</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="accordion-item shadow mt-2">
-                                                <h2 class="accordion-header" id="accordionborderedExample6">
-                                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#accor_borderedExamplecollapse6" aria-expanded="false" aria-controls="accor_borderedExamplecollapse6">
-                                                        Cafe
-                                                    </button>
-                                                </h2>
-                                                <div id="accor_borderedExamplecollapse6" class="accordion-collapse collapse" aria-labelledby="accordionborderedExample6" data-bs-parent="#accordionBordered">
-                                                    <div class="accordion-body">
-                                                        <p>Contact Cafe:</p>
-                                                        <p>Email: cafe@example.com</p>
-                                                        <p>Phone: +123456789</p>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <h4>Contact Information</h4>
+                                            <?php include 'help.php' ?>
                                         </div>
-                                    </div>
 
-                                    <div class="tab-pane" id="maps" role="tabpanel">
-                                        <div class="map-container">
-                                            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.2773093131004!2d106.93293727499034!3d-6.227122293760967
-                                                        !2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e698cbc5bbd3d9b%3A0x830a1dd78974e817!2sVAPEHAN!5e0!3m2!1sid!2sid!4v1702620135194!5m2!1sid!2sid" 
-                                                        width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                                        <div class="tab-pane" id="deleteAccount" role="tabpanel">
+                                            <div class="text-center mt-4">
+                                                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+                                                    Delete Account
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
+                    <?php } else { ?>
+                        <div class="row">
+                            <div class="noresult mb-0 p-5">
+                                <div class="text-center">
+                                    <img src="assets/images/profile.png" alt="" class="img-fluid rounded" style="width:270px;height:210px" />
+                                    <h5 class="mt-2">Sorry! Anda belum login</h5>
+                                    <p class="text-muted mb-0">Silahkan login terlebih dahulu, untuk edit data profile anda</p>
+                                    <p></p>
+                                    <div class="flex-grow-1 mb-0">
+                                        <a href="login.php" class="btn btn-primary btn-label waves-effect waves-light">
+                                            <i class="ri-lock-2-fill label-icon align-middle fs-16 me-2"></i> LogIn</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <?php } ?>
                 </div>
             </div>
             <?php include 'layouts/footer.php'; ?>
-
         </div>
-
     </div>
+
+    <!-- Add this code where you want to place your modal, for example, at the end of your body tag -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="deleteAccount()">Delete Account</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     <?php include 'layouts/vendor-scripts.php'; ?>
 
-    <!-- profile-setting init js -->
     <script src="assets/js/pages/profile-setting.init.js"></script>
-
-    <!-- App js -->
     <script src="assets/js/app.js"></script>
 
+    
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <!-- Add this script to the end of your HTML body or include it in your existing script -->
     <script>
-    function showContactInfo(selectElement) {
-        // Sembunyikan semua konten
-        var allContactContents = document.querySelectorAll('[id$="Content"]');
-        for (var i = 0; i < allContactContents.length; i++) {
-            allContactContents[i].style.display = "none";
+        function generateBarcode() {
+            var barcodeContainer = document.getElementById('barcodeContainer');
+            barcodeContainer.innerHTML = ''; // Bersihkan kontainer sebelum menambahkan barcode baru
+
+            // Ganti JsBarcode dengan fungsi dari pustaka QR Code Generator
+            var memberid = '<?php echo $memberid; ?>';
+            var qrcode = new QRCode(barcodeContainer, {
+                text: memberid,
+                width: 128,
+                height: 128
+            });
         }
 
-        // Tampilkan konten yang sesuai dengan opsi yang dipilih
-        var selectedContactContent = document.getElementById(selectElement.value + "Content");
-        if (selectedContactContent) {
-            selectedContactContent.style.display = "block";
+        function toggleBarcode() {
+        var barcodeContainer = document.getElementById('barcodeContainer');
+        if (barcodeContainer.style.display === '' || barcodeContainer.style.display === 'none') {
+            generateBarcode();
+            barcodeContainer.style.display = 'block';
+        } else {
+            barcodeContainer.style.display = 'none';
+        }
+    }
+
+        generateBarcode(); // Inisialisasi barcode saat halaman dimuat
+    </script>
+
+<script>
+    document.getElementById('toggleNewPassword').addEventListener('click', function () {
+        togglePassword('newpasswordInput');
+    });
+
+    document.getElementById('toggleConfirmPassword').addEventListener('click', function () {
+        togglePassword('confirmpasswordInput');
+    });
+
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(`toggle${inputId}Icon`);
+
+        if (input.getAttribute('type') === 'password') {
+            input.setAttribute('type', 'text');
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        } else {
+            input.setAttribute('type', 'password');
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        }
+    }
+</script>
+<script>
+    function deleteAccount() {
+        var confirmed = confirm('Are you sure you want to delete your account?');
+        if (confirmed) {
+            // Use AJAX to send a request to the server for account deletion
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'delete_account_ajax.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Handle the response from the server if needed
+                    // For example, you can redirect the user to the login page
+                    window.location.href = 'login.php';
+                }
+            };
+            
+            // Assuming you have the memberid or kd_member in a variable called memberid
+            var memberid = '<?php echo $memberid; ?>';
+            
+            // Send the request with the memberid as data
+            xhr.send('memberid=' + memberid);
         }
     }
 </script>
 
-</body>
-
+    </body>
 </html>

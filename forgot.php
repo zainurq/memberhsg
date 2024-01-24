@@ -1,71 +1,69 @@
 <?php
-// Include config file
-require_once "layouts/config.php";
+include "layouts/config.php";
+include 'layouts/main.php';
+require 'vendor/autoload.php';
+
+$msg = '';
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-require_once __DIR__ . '/vendor/phpmailer/src/Exception.php';
-require_once __DIR__ . '/vendor/phpmailer/src/PHPMailer.php';
-require_once __DIR__ . '/vendor/phpmailer/src/SMTP.php';
-$useremail_err = $msg = "";
-// passing true in constructor enables exceptions in PHPMailer
-$mail = new PHPMailer(true);
-$uri_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$uri_segments = explode('/', $uri_path);
-$actual_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]/$uri_segments[1]";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $email = $_POST['useremail'];
 
-    $useremail = mysqli_real_escape_string($link, $_POST['useremail']);
+    // Periksa apakah email terdaftar
+    $check_query = "SELECT * FROM member_hsg WHERE email = '$email'";
+    $check_result = mysqli_query($link, $check_query);
 
-    $sql = "SELECT * FROM users WHERE useremail = '$useremail'";
-    $query = mysqli_query($link, $sql);
-    $emailcount = mysqli_num_rows($query);
+    if (!$check_result) {
+        die('Error in query: ' . mysqli_error($link));
+    }
 
-    if ($emailcount) {
-        $userdata = mysqli_fetch_array($query);
-        $username = $userdata['username'];
-        $token = $userdata['token'];
+    if (mysqli_num_rows($check_result) == 0) {
+        $msg = "Email tidak terdaftar.";
+    } else {
+        // Generate kode reset password
+        $reset_code = generateRandomCode();
 
-        $subject = "Password Reset";
-        $body = "Hi, $username. Click here to reset your password " . $actual_link . "/auth-reset-password.php?token=$token ";
-        $sender_email = "From: $gmailid";
+        // Simpan kode reset password ke database
+        $member_data = mysqli_fetch_assoc($check_result);
+        $member_id = $member_data['memberid'];
+
+        $update_query = "INSERT INTO forgotpassword (memberid, email, kode, status, datecreate) 
+                        VALUES ('$member_id', '$email', '$reset_code', 'ready', NOW()) 
+                        ON DUPLICATE KEY UPDATE kode = VALUES(kode), status = 'ready', datecreate = NOW()";
+        mysqli_query($link, $update_query);
+
+        // Kirim email reset password
+        $mail = new PHPMailer(true);
 
         try {
-            // Server settings
-            // $mail->SMTPDebug = SMTP::DEBUG_SERVER; // for detailed debug output
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
+            $mail->Host = "mail.vapehan.com";
             $mail->SMTPAuth = true;
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Username = "sales@vapehan.com";
+            $mail->Password = "HSGHelihan77";
             $mail->Port = 587;
+            $mail->SMTPSecure = "SSL";
 
-            $mail->Username = $gmailid;
-            $mail->Password = $gmailpassword;
-
-            // Sender and recipient settings
-            $mail->setFrom($gmailid, $gmailusername);
-            $mail->addAddress($useremail, $username);
-            $mail->addReplyTo($gmailid, $gmailusername); // to set the reply to
-
-            // Setting the email content
-            $mail->IsHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body = $body;
-
+            $mail->isHTML(true);
+            $mail->setFrom("sales@vapehan.com", "no-reply");
+            $mail->addAddress($email);
+            $mail->Subject = "Reset Password";
+            $mail->Body = "Hi, {$member_data['firstname']}. Click here to reset your password: http://localhost/memberhsg/auth-reset-password.php?email=$email&token=$reset_code&kode=$reset_code";
             $mail->send();
-            $msg = "We have emailed your password reset link!";
-            // header("location:auth-login.php");
+            $msg = "Email reset password berhasil dikirim.";
         } catch (Exception $e) {
-            $useremail_err =  "Error in sending email. Mailer Error: {$mail->ErrorInfo}";
+            $msg = "Gagal mengirim email reset password. Error: {$mail->ErrorInfo}";
         }
-    } else {
-        $useremail_err = "No Email Found";
     }
 }
+
+function generateRandomCode() {
+    return sprintf("%04d", mt_rand(1, 9999));
+}
 ?>
-<?php include 'layouts/main.php'; ?>
+
 
 <head>
 
@@ -94,8 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="col-lg-12">
                         <div class="text-center mt-sm-5 mb-4 text-white-50">
                             <div>
-                                <a href="#" class="d-inline-block auth-logo">
-                                    <img src="assets/images/logo-ij.png" alt="" height="130">
+                                <a href="index.php" class="d-inline-block auth-logo">
+                                    <img src="assets/images/memberhsg.png" alt="" height="130">
                                 </a>
                             </div>
                             <p class="mt-3 fs-15 fw-medium"></p>
@@ -111,7 +109,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <div class="card-body p-4">
                                 <div class="text-center mt-2">
                                     <h5 class="text-primary">Forgot Password?</h5>
-                                    <p class="text-muted">Reset password with velzon</p>
 
                                     <lord-icon src="https://cdn.lordicon.com/rhvddzym.json" trigger="loop" colors="primary:#0ab39c" class="avatar-xl">
                                     </lord-icon>
@@ -122,14 +119,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     Enter your email and instructions will be sent to you!
                                 </div>
                                 <div class="p-2">
-                                    <?php if ($msg) { ?>
-                                    <div class="alert alert-success text-center mb-4 mt-4 pt-2" role="alert"><?php echo $msg; ?></div>
-                                    <?php } ?>
-                                    <form action="<?php echo htmlentities($_SERVER["PHP_SELF"]); ?>" method="post">
-                                        <div class="mb-4 <?php echo (!empty($useremail_err)) ? 'has-error' : ''; ?>">
+                                <?php if (isset($msg)) { ?>
+                                    <div class="alert alert-success text-center mb-4 mt-4 pt-2" role="alert">
+                                        <?php echo $msg; ?>
+                                    </div>
+                                <?php } ?>
+                                    <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+                                        <div class="mb-4">
                                             <label class="form-label">Email</label>
                                             <input type="email" class="form-control" name="useremail" id="email" placeholder="Enter Email">
-                                            <span class="text-danger"><?php echo $useremail_err; ?></span>
+                                            <span class="text-danger"></span>
                                         </div>
 
                                         <div class="text-center mt-4">
@@ -141,11 +140,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <!-- end card body -->
                         </div>
                         <!-- end card -->
-
-                        <div class="mt-4 text-center">
-                            <p class="mb-0">Wait, I remember my password... <a href="login.php" class="fw-semibold text-primary text-decoration-underline"> Click here </a> </p>
-                        </div>
-
                     </div>
                 </div>
                 <!-- end row -->
@@ -154,20 +148,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </div>
         <!-- end auth page content -->
 
-        <!-- footer -->
-        <footer class="footer">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="text-center">
-                            <p class="mb-0 text-muted">&copy;
-                                <script>document.write(new Date().getFullYear())</script> Velzon. Crafted with <i class="mdi mdi-heart text-danger"></i> by Themesbrand
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer>
+        
         <!-- end Footer -->
     </div>
     <!-- end auth-page-wrapper -->

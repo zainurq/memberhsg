@@ -10,12 +10,8 @@
 			$email = $_GET['email'];
 			$password = $_GET['password'];
 			
-			$query = "select * from
-						(select memberid, firstname, phonenumber, login, setpassword, email, password, `status`
-						from member_hsg 
-						union all
-						select memberid, firstname, phonenumber, login, setpassword, email, password, `status`
-						from development.member_hsg)x
+			$query = "select memberid, firstname, phonenumber, login, setpassword, email, password, `status`
+						from development.member_hsg
 						where email = '".$email."' and password = '".md5($password)."'";
 			            
             $result = $db->query($query);

@@ -23,22 +23,40 @@ switch($_GET['action'])
 		echo json_encode($result);
 	break;
 	
-	case 'SetPassword':
-		$password = $_GET['password'];
-		$email = $_GET['email'];
+	// case 'SetPassword':
+	// 	$password = $_GET['password'];
+	// 	$email = $_GET['email'];
 	
-		$query = "update member_hsg set password = md5('".$password."'), setpassword = 1 
-					where email = '".$email."'";
+	// 	$query = "update developer.member_hsg set password = md5('".$password."'), setpassword = 1 
+	// 				where email = '".$email."'";
 					
-		$queryB = "update hm_mobileapps.member_hsg set password = md5('".$password."'), setpassword = 1 
-					where email = '".$email."'";			
+	// 	$queryB = "update developer.member_hsg set password = md5('".$password."'), setpassword = 1 
+	// 				where email = '".$email."'";			
 		
-		$result = $db->query($query);
-		$resultB = $db->query($queryB);
+	// 	$result = $db->query($query);
+	// 	$resultB = $db->query($queryB);
 		
-		mysqli_close($db);
-		echo json_encode($result);
-	break;
+	// 	mysqli_close($db);
+	// 	echo json_encode($result);
+	// break;
+	case 'SetPassword':
+        $newPassword = isset($_POST['newPassword']) ? $_POST['newPassword'] : '';
+        $email = isset($_POST['email']) ? $_POST['email'] : '';
+
+        // Gunakan md5 jika Anda ingin tetap menggunakan md5
+        $hashedPassword = md5($newPassword);
+
+        // Perbarui kata sandi menggunakan prepared statement untuk menghindari SQL injection
+        $query = "UPDATE member_hsg SET password = ?, setpassword = 1 WHERE email = ?";
+        $stmt = mysqli_prepare($db, $query);
+        mysqli_stmt_bind_param($stmt, 'ss', $hashedPassword, $email);
+        $result = mysqli_stmt_execute($stmt);
+
+        mysqli_close($db);
+
+        echo json_encode(['success' => $result]);
+        break;
+
 	
 	case 'EditProfile':
 		$firstname 	 = $_GET['firstname'];
@@ -128,7 +146,7 @@ switch($_GET['action'])
 		mysqli_close($db);
 		echo json_encode($result);
 	break;
-	
+	 
 	case 'UploadImage':
 		$memberid = $_GET['memberid'];
 		$image	  = $_GET['image'];

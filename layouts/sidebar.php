@@ -42,7 +42,7 @@ if(isset($_SESSION['logged_in']) && $_SESSION['logged_in']){
             <ul class="navbar-nav" id="navbar-nav">
                 <li class="menu-title"><span data-key="t-menu">Menu</span></li>
                 <li class="nav-item">
-                    <a class="nav-link menu-link" href="index2.php">
+                    <a class="nav-link menu-link" href="index.php">
                         <i class="ri-home-4-line"></i> <span data-key="t-widgets">Beranda</span>
                     </a>
                 </li>
@@ -58,7 +58,7 @@ if(isset($_SESSION['logged_in']) && $_SESSION['logged_in']){
                     <div class="collapse menu-dropdown" id="sidebarApps">
                         <ul class="nav nav-sm flex-column">
                             <li class="nav-item">
-                                <a href="getpoin.php" class="nav-link"> Mendapatkan Poin </a>
+                                <a href="get.php" class="nav-link"> Mendapatkan Poin </a>
                             </li>
                             <li class="nav-item">
                                 <a href="usedpoin.php" class="nav-link"> Menggunakan Poin </a>

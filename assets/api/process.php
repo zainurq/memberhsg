@@ -25,7 +25,7 @@ switch($_GET['action'])
             while($row = mysqli_fetch_array($exec)) {
                 $_SESSION["loggedin"] = true;
                 $_SESSION["memberid"] = $row['memberid'];
-                $_SESSION["useremail"] = $username;
+                $_SESSION["email"] = $username;
             }
         }else{
             header("location:../../login.php?id=".$id."&pesan=gagal")or die(mysql_error());
@@ -34,7 +34,6 @@ switch($_GET['action'])
     break;
 
     case 'signup':
-        $id = $_GET['id'];
         $useremail = $_POST['useremail'];
         $username = $_POST['username'];
         $password = $_POST['password'];
@@ -55,19 +54,19 @@ switch($_GET['action'])
         $useremail = $_GET['useremail'];
         $password = $_GET['password'];
 
-        $query = "select userid, username from gift_user where useremail = '".$useremail."' and password = md5('".$password."')";
+        $query = "select reqid, firstname from member_hsg where email = '".$useremail."' and password = md5('".$password."')";
 
         $exec = mysqli_query($link, $query);
         
         if($exec){
             foreach($exec as $row){
-                $custid = $row['userid'];
+                $custid = $row['regid'];
             }
             
             if(mysqli_num_rows($exec) == 1) {
                 session_start();
                 $_SESSION['logged_in'] = true;
-                $_SESSION['useremail'] = $useremail;
+                $_SESSION['email'] = $useremail;
                 $_SESSION['custid'] = $custid;
                 echo 'success';
             }else{

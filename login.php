@@ -1,3 +1,5 @@
+<?php error_reporting(E_ALL & ~E_NOTICE); ?>
+
 <?php include 'layouts/session.php'; ?>
 <?php include 'layouts/main.php'; ?>
 <?php include 'layouts/config.php'; 
@@ -14,7 +16,6 @@ ini_set('display_errors', 1);
 
     <?php include 'layouts/head-css.php'; ?>
 
-    <?php $id = $_GET['id']; ?>
 </head>
 
 <body>
@@ -93,7 +94,7 @@ ini_set('display_errors', 1);
                         <!-- end card -->
 
                         <div class="mt-4 text-center">
-                            <p class="mb-0">Don't have an account ? <a href="signup.php?id=<?php echo $id; ?>" class="fw-semibold text-primary text-decoration-underline"> Signup </a> </p>
+                            <p class="mb-0">Don't have an account ? <a href="signup.php" class="fw-semibold text-primary text-decoration-underline"> Signup </a> </p>
                         </div>
 
                     </div>
@@ -103,22 +104,6 @@ ini_set('display_errors', 1);
             <!-- end container -->
         </div>
         <!-- end auth page content -->
-
-        <!-- footer -->
-        <!-- <footer class="footer">
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-12">
-                        <div class="text-center">
-                            <p class="mb-0 text-muted">&copy;
-                                <script>document.write(new Date().getFullYear())</script> Velzon. Crafted with <i class="mdi mdi-heart text-danger"></i> by Themesbrand
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer> -->
-        <!-- end Footer -->
     </div>
     <!-- end auth-page-wrapper -->
 
@@ -193,7 +178,7 @@ ini_set('display_errors', 1);
                         </div>
                         <div class="mt-4 pt-2 fs-15 mx-4 mx-sm-5">
                             <h4>Login</h4>
-                            <p class="text-muted mx-4 mb-0" for="paramInfo">UserEmail dan Password tidak valid</p>
+                            <p class="text-muted mx-4 mb-0" for="paramInfo">Email dan Password tidak valid</p>
                         </div>
                     </div>
                     <div class="d-flex gap-2 justify-content-center mt-4 mb-2">

@@ -1,8 +1,18 @@
 <?php
+error_reporting(E_ALL & ~E_NOTICE);
+
 include 'layouts/main.php';
 include 'layouts/config.php';
 
-$member = $_GET['member'];
+session_start();
+if (!isset($_SESSION['kd_member'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Dapatkan kd_member dari session jika sudah login
+$kd_member = isset($_SESSION['kd_member']) ? $_SESSION['kd_member'] : '';
+
 $type = isset($_GET['type']) ? $_GET['type'] : '';
 $fdate = $_GET['fdate'];
 $tdate = $_GET['tdate'];
@@ -28,19 +38,22 @@ $flag = isset($_GET['flag']) ? $_GET['flag'] : '';
                     <?php
                     includeFileWithVariables('layouts/page-title.php', array('pagetitle' => 'HSGMember', 'title' => 'Point Digunakan'));
 
-                    $query = "SELECT kd_member, invoice as no_invoice, 
-                            ifnull((select itemname from development.poin_item_gift where sku = x.invoice limit 1), '') as itemgift, ifnull(point, 0) as point,
-                            date_create, time_create, flag, ifnull(noresi, '') as noresi, 
-                            ifnull((select courierid from indoongkir.courier where devid = x.delivery limit 1), '') as courierid,
-                            concat('http://103.106.79.238:81/hsgmember/images/giftpoin/', invoice, '.jpg') as urlimage
-                            from point_member x 
-                            where kd_member = 'HSG.21.000001' and flag = 'used' and point not in (0)
-                            order by concat(date_create, time_create) desc";
+                    if (!empty($kd_member)) {
+                        $query = "SELECT kd_member, invoice as no_invoice, 
+                                ifnull((select itemname from development.poin_item_gift where sku = x.invoice limit 1), '') as itemgift, ifnull(point, 0) as point,
+                                date_create, time_create, flag, ifnull(noresi, '') as noresi, 
+                                ifnull((select courierid from indoongkir.courier where devid = x.delivery limit 1), '') as courierid,
+                                concat('http://103.106.79.238:81/hsgmember/images/giftpoin/', invoice, '.jpg') as urlimage
+                                from point_member x 
+                                where kd_member = '$kd_member' and flag = 'used' and point not in (0)
+                                order by concat(date_create, time_create) desc";
 
-                    $result = $link->query($query);
-
-                    $res = $result->fetch_all(MYSQLI_ASSOC);
-                    mysqli_close($link);
+                        $result = $link->query($query);
+                        $res = $result->fetch_all(MYSQLI_ASSOC);
+                        mysqli_close($link);
+                    } else {
+                        $res = null;
+                    }
                     ?>
 
                     <?php if ($res) { ?>
